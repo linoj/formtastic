@@ -1,0 +1,33 @@
+h1. Formtastic Renderer
+
+Replaceable render engines for formtastic.
+
+h2. Renderer API
+
+  render_input( input )
+
+    input       hash may include keys
+      :method         => symbol
+      :options        => original set of options
+      :as             => the input type (eg :string, :textarea, etc)
+      :input          => string with html input tag (and attributes, children)
+                        OR array of items to be rendered, each hash with keys
+                          :
+      :label          => string with html label tag
+      :hint           => optional hints string 
+      :errors         => actual errors on the method
+      :inline_errors  => string with inline error messages (pre-rendered per @@inline_errors setting)
+      :wrapper        => hash of attributes for the wrapper container (eg :class)
+      :hidden         => string of additional hidden input tags
+
+
+    render_field_set( fieldset )
+      :legend
+      :contents
+      :wrapper
+
+h2. Configuration
+
+
+h2. To create a new renderer
+

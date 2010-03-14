@@ -23,6 +23,7 @@ end
 
 require File.expand_path(File.join(File.dirname(__FILE__), '../lib/formtastic'))
 require File.expand_path(File.join(File.dirname(__FILE__), '../lib/formtastic/layout_helper'))
+Dir["#{File.dirname(__FILE__)}/renderers/*.rb"].each {|f| require f}
 
 
 module FormtasticSpecHelper

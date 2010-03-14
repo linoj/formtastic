@@ -1,9 +1,13 @@
 # coding: utf-8
 require File.join(File.dirname(__FILE__), *%w[formtastic i18n])
+Dir["#{File.dirname(__FILE__)}/formtastic/renderers/*.rb"].each {|f| require f}
 
 module Formtastic #:nodoc:
 
   class SemanticFormBuilder < ActionView::Helpers::FormBuilder
+    include ClassicFormtasticRenderer
+    #include DumyRenderer
+    #include ErbRenderer
 
     @@default_text_field_size = 50
     @@default_text_area_height = 20
@@ -77,6 +81,10 @@ module Formtastic #:nodoc:
     #   <% end %>
     #
     def input(method, options = {})
+      content = {
+        :method       => method,
+        :options      => options.dup
+      }
       options[:required] = method_required?(method) unless options.key?(:required)
       options[:as]     ||= default_input_type(method, options)
 
@@ -92,14 +100,17 @@ module Formtastic #:nodoc:
         options[:label_html][:for] ||= options[:input_html][:id]
       end
 
-      input_parts = @@inline_order.dup
-      input_parts.delete(:errors) if options[:as] == :hidden
-
-      list_item_content = input_parts.map do |type|
-        send(:"inline_#{type}_for", method, options)
-      end.compact.join("\n")
-
-      return template.content_tag(:li, list_item_content, wrapper_html)
+      content[:as]            = options[:as]
+      content[:hint]          = localized_string(method, options[:hint], :hint) if options[:hint].present?
+      content[:errors]        = @object.errors[method.to_sym] if @object && @object.respond_to?(:errors)
+      content[:inline_errors] = inline_errors_for(method, options) unless options[:as] == :hidden
+      content[:wrapper]       = wrapper_html
+      
+      content[:label], 
+      content[:input],
+      content[:hidden]         = inline_input_for(method, options)
+      
+      render_input(content)
     end
 
     # Creates an input fieldset and ol tag wrapping for use around a set of inputs.  It can be
@@ -336,7 +347,11 @@ module Formtastic #:nodoc:
       element_class = ['commit', options.delete(:class)].compact.join(' ') # TODO: Add class reflecting on form action.
       accesskey = (options.delete(:accesskey) || @@default_commit_button_accesskey) unless button_html.has_key?(:accesskey)
       button_html = button_html.merge(:accesskey => accesskey) if accesskey
-      template.content_tag(:li, self.submit(text, button_html), :class => element_class)
+      render_input({
+        :as           => :button,
+        :input        => self.submit(text, button_html),
+        :wrapper      => {:class => element_class}
+      })
     end
 
     # A thin wrapper around #fields_for to set :builder => Formtastic::SemanticFormBuilder
@@ -561,8 +576,8 @@ module Formtastic #:nodoc:
         html_options = options.delete(:input_html) || {}
         html_options = default_string_options(method, type).merge(html_options) if [:numeric, :string, :password, :text].include?(type)
 
-        self.label(method, options_for_label(options)) <<
-        self.send(form_helper_method, method, html_options)
+        [self.label(method, options_for_label(options)),
+        self.send(form_helper_method, method, html_options)]
       end
 
       # Outputs a label and standard Rails text field inside the wrapper.
@@ -599,7 +614,7 @@ module Formtastic #:nodoc:
         if options[:input_html].present?
           options[:value] = options[:input_html][:value] if options[:input_html][:value].present?
         end
-        self.hidden_field(method, strip_formtastic_options(options))
+        [nil,nil,self.hidden_field(method, strip_formtastic_options(options))]
       end
 
       # Outputs a label and a select box containing options from the parent
@@ -742,7 +757,7 @@ module Formtastic #:nodoc:
           self.select(input_name, collection, strip_formtastic_options(options), html_options)
         end
 
-        self.label(method, options_for_label(options).merge(:input_name => input_name)) << select_html
+        [self.label(method, options_for_label(options).merge(:input_name => input_name)), select_html]
       end
       alias :boolean_select_input :select_input
 
@@ -765,9 +780,9 @@ module Formtastic #:nodoc:
         html_options = options.delete(:input_html) || {}
         selected_value = options.delete(:selected)
 
-        self.label(method, options_for_label(options)) <<
+        [self.label(method, options_for_label(options)),
         self.time_zone_select(method, options.delete(:priority_zones),
-          strip_formtastic_options(options).merge(:default => selected_value), html_options)
+          strip_formtastic_options(options).merge(:default => selected_value), html_options)]
       end
 
       # Outputs a fieldset containing a legend for the label text, and an ordered list (ol) of list
@@ -851,17 +866,21 @@ module Formtastic #:nodoc:
           input_ids << input_id
 
           html_options[:checked] = selected_value == value if selected_option_is_present
-
-          li_content = template.content_tag(:label,
-            "#{self.radio_button(input_name, value, html_options)} #{label}",
-            :for => input_id
-          )
-
+          input_tag = radio_button(input_name, value, html_options) 
           li_options = value_as_class ? { :class => [method.to_s.singularize, value.to_s.downcase].join('_') } : {}
-          template.content_tag(:li, li_content, li_options)
+          
+          {
+            :input    => input_tag,
+            :label    => label,
+            :input_id => input_id,
+            :wrapper  => li_options
+          }
         end
 
-        field_set_and_list_wrapping_for_method(method, options, list_item_content)
+        [
+          self.label(method, options_for_label(options).merge(:for => options.delete(:label_for))),
+          list_item_content
+        ]
       end
       alias :boolean_radio_input :radio_input
 
@@ -990,7 +1009,7 @@ module Formtastic #:nodoc:
         time_inputs = [:hour, :minute]
         time_inputs << [:second] if options[:include_seconds]
 
-        list_items_capture = ""
+        list_items = []
         hidden_fields_capture = ""
 
         datetime = options.key?(:default) ? options[:default] : Time.now # can't do an || because nil is an important value
@@ -1012,15 +1031,21 @@ module Formtastic #:nodoc:
             opts = strip_formtastic_options(options).merge(:prefix => @object_name, :field_name => field_name, :default => datetime)
             item_label_text = labels[input] || ::I18n.t(input.to_s, :default => input.to_s.humanize, :scope => [:datetime, :prompts])
 
-            list_items_capture << template.content_tag(:li, [
-                !item_label_text.blank? ? template.content_tag(:label, item_label_text, :for => input_id) : "",
-                template.send(:"select_#{input}", datetime, opts, html_options.merge(:id => input_id))
-              ].join("")
-            )
+            label = !item_label_text.blank? ? template.content_tag(:label, item_label_text, :for => input_id) : ""
+            input_tag = template.send(:"select_#{input}", datetime, opts, html_options.merge(:id => input_id))
+            list_items << {
+              :part  => input,
+              :input => input_tag,
+              :label => label
+            }
           end
         end
 
-        hidden_fields_capture << field_set_and_list_wrapping_for_method(method, options.merge(:label_for => input_ids.first), list_items_capture)
+        [
+          self.label(method, options_for_label(options).merge(:for => input_ids.first) ),
+          list_items,
+          hidden_fields_capture
+        ]
       end
 
       # Outputs a fieldset containing a legend for the label text, and an ordered list (ol) of list
@@ -1118,17 +1143,21 @@ module Formtastic #:nodoc:
 
           html_options[:checked] = selected_values.include?(value) if selected_option_is_present
           html_options[:id] = input_id
-
-          li_content = template.content_tag(:label,
-            "#{self.check_box(input_name, html_options, value, unchecked_value)} #{label}",
-            :for => input_id
-          )
-
+          input_tag = check_box(input_name, html_options, value, unchecked_value)
           li_options = value_as_class ? { :class => [method.to_s.singularize, value.to_s.downcase].join('_') } : {}
-          template.content_tag(:li, li_content, li_options)
+          #render_checkbox( input_tag, label, input_id, li_options )
+          {
+            :input    => input_tag,
+            :label    => label,
+            :input_id => input_id,
+            :wrapper  => li_options
+          }
         end
-
-        field_set_and_list_wrapping_for_method(method, options, list_item_content)
+        
+        [
+          self.label(method, options_for_label(options).merge(:for => options.delete(:label_for))),
+          list_item_content
+        ]
       end
 
       # Outputs a country select input, wrapping around a regular country_select helper.
@@ -1151,8 +1180,8 @@ module Formtastic #:nodoc:
         html_options = options.delete(:input_html) || {}
         priority_countries = options.delete(:priority_countries) || @@priority_countries
 
-        self.label(method, options_for_label(options)) <<
-        self.country_select(method, priority_countries, strip_formtastic_options(options), html_options)
+        [self.label(method, options_for_label(options)),
+        self.country_select(method, priority_countries, strip_formtastic_options(options), html_options)]
       end
 
       # Outputs a currency select input, wrapping around a regular curency_select helper.
@@ -1171,8 +1200,8 @@ module Formtastic #:nodoc:
        html_options = options.delete(:input_html) || {}
        priority_currencies = options.delete(:priority_currencies) || @@priority_currencies
 
-       self.label(method, options_for_label(options)) <<
-       self.currency_select(method, priority_currencies, strip_formtastic_options(options), html_options)
+       [self.label(method, options_for_label(options)),
+       self.currency_select(method, priority_currencies, strip_formtastic_options(options), html_options)]
      end
 
       # Outputs a label containing a checkbox and the label text. The label defaults
@@ -1197,20 +1226,13 @@ module Formtastic #:nodoc:
         # the label() method will insert this nested input into the label at the last minute
         options[:label_prefix_for_nested_input] = input
 
-        self.label(method, options)
+        [nil, self.label(method, options)]
       end
 
       # Generates an input for the given method using the type supplied with :as.
+      # returns array [label, input, hiddens]
       def inline_input_for(method, options)
         send(:"#{options.delete(:as)}_input", method, options)
-      end
-
-      # Generates hints for the given method using the text supplied in :hint.
-      #
-      def inline_hints_for(method, options) #:nodoc:
-        options[:hint] = localized_string(method, options[:hint], :hint)
-        return if options[:hint].blank?
-        template.content_tag(:p, options[:hint], :class => 'inline-hints')
       end
 
       # Creates an error sentence by calling to_sentence on the errors array.
@@ -1288,14 +1310,13 @@ module Formtastic #:nodoc:
             template.capture(&block)
           end
         end
-
-        # Ruby 1.9: String#to_s behavior changed, need to make an explicit join.
-        contents = contents.join if contents.respond_to?(:join)
-        fieldset = template.content_tag(:fieldset,
-          legend << template.content_tag(:ol, contents),
-          html_options.except(:builder, :parent)
-        )
-
+        
+        fieldset = render_field_set({ 
+          :legend     => legend, 
+          :contents   => contents, 
+          :wrapper    => html_options.except(:builder, :parent)
+        })
+        
         template.concat(fieldset) if block_given?
         fieldset
       end
