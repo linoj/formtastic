@@ -6,10 +6,11 @@ One of the things I love about Formtastic is the semantic DSL for specifying a f
 
 h2. Renderer API
 
-  # render an input
+<pre>
   render_input( input )
 
     input       hash may include keys
+    
       :method         => symbol
       :as             => the input type (eg :string, :textarea, etc)
       :options        => original set of options
@@ -21,17 +22,21 @@ h2. Renderer API
       :hidden         => string of additional hidden input tags
 
       WILL CONTAIN ONLY ONE OF THE FOLLOWING:
+      
       :input          => string with html input tag (and attributes, children)
 
       :items          => array of input items to be rendered, each hash with keys
+      
                           :input     => string with html input tag (eg radio)
                           :label     => string with html label tag
                           :input_id  => string with target dom id of the input
                           :wrapper   => hash of html attributes for the wrapper container (eg :class)
 
       :chronos        => array of input items to be rendered, each hash with keys
+      
                           :input     => string with html input tag
                           :label     => string with html label tag
+</pre>
       
 _input_ will include only one of :input, :items, or :chronos.
 
@@ -39,18 +44,21 @@ I decided to leave the inline error tags that Formtastic generates, which are ba
 
 I am also leaving how Formtastic renders _required_ labels (with attr tag). If your custom renderer need to know a field is required, look for options[:required] value.
 
-    # render a field set
+<pre>
     render_field_set( fieldset )
+    
       :legend         => string that should go into the legend
       :contents       => string or array of html tag strings that make the content of the field set
       :wrapper        => hash of html attributes for the fieldset 
+</pre>
 
 h2. Configuration
 
 You can replace the default plugin renderer by specifying the module here. Defaults to ClassicFormtasticRenderer.
 Other possibilities include InspectorRenderer (for debugging) and ErbRenderer, or your own.
-
+<pre>
   Formtastic::SemanticFormBuilder.renderer = Formtastic::ClassicFormtasticRenderer
+</pre>
 
 h2. Renderers
 
@@ -62,10 +70,12 @@ h3. ErbRenderer
 
 The ERB renderer renders an ERB partial for each input. There are 4 built-in partials that emulate the classic Formtastic rendering.
 
+<pre>
   _input.html.erb             general input
   _items.html.erb             radio and check box items
   _chronos.html.erb           date and time selects
   _fieldset.html.erb          field set wrapper
+</pre>
   
 You can create a partial for each and any specific input (the :as value), such as "_textarea.html.erb". If not found, it then looks for a partial for the input category ("chronos" for date and time selects; "items" for radio and check boxes' and "input" for all others).
 
@@ -77,10 +87,10 @@ Dumps the arguments to the renderer api (in yaml format). Useful for debugging.
 
 h2. To Do
 
-- write rspecs for renderers
-- add partial layouts
-- option to specify partial name in the DSL
-- option to specify inline template string in the DSL
-- option to pass through arbitrary options to the renderer
-- add mustache renderer
+* write rspecs for renderers
+* add partial layouts
+* option to specify partial name in the DSL
+* option to specify inline template string in the DSL
+* option to pass through arbitrary options to the renderer
+* add mustache renderer
 
