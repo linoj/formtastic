@@ -1,0 +1,19 @@
+<li id="<%= wrapper[:id] %>" class="<%= wrapper[:class] %>" >
+  <fieldset>
+    <legend class="label">
+      <%= label -%>
+    </legend>
+    <ol>
+      <% items.each do |item| -%>
+      <li <%= "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+        <label for="<%= item[:input_id] %>">
+          <%= item[:input] -%>
+          <%= item[:label] -%>
+        </label>
+      </li>
+      <% end -%>
+    </ol>
+  </fieldset>
+  <%= hints rescue nil -%>
+  <%= inline_errors rescue nil -%>
+</li>

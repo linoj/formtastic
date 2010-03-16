@@ -1,0 +1,12 @@
+<fieldset <%= wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
+  <% unless legend.blank? -%>
+  <legend>
+    <span><%= legend %></span>
+  </legend>
+  <% end -%>
+  <ol>
+    <% Array(contents).each do |item| -%>
+      <%= item -%>
+    <% end %>
+  </ol>
+</fieldset>

@@ -12,6 +12,7 @@ describe 'SemanticFormBuilder#input' do
 
   describe 'with inline order customization' do
     it 'should allow input, hints, errors as order' do
+      pending("replace with spec that doesnt depend on implementation")
       ::Formtastic::SemanticFormBuilder.inline_order = [:input, :hints, :errors]
 
       semantic_form_for(@new_post) do |builder|
@@ -23,6 +24,7 @@ describe 'SemanticFormBuilder#input' do
     end
 
     it 'should allow hints, input, errors as order' do
+      pending("replace with spec that doesnt depend on implementation")
       ::Formtastic::SemanticFormBuilder.inline_order = [:hints, :input, :errors]
 
       semantic_form_for(@new_post) do |builder|

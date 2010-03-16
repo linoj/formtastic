@@ -5,9 +5,6 @@ Dir["#{File.dirname(__FILE__)}/formtastic/renderers/*.rb"].each {|f| require f}
 module Formtastic #:nodoc:
 
   class SemanticFormBuilder < ActionView::Helpers::FormBuilder
-    include ClassicFormtasticRenderer
-    #include DumyRenderer
-    #include ErbRenderer
 
     @@default_text_field_size = 50
     @@default_text_area_height = 20
@@ -24,16 +21,23 @@ module Formtastic #:nodoc:
     @@priority_currencies = ["US Dollar", "Euro"]
     @@i18n_lookups_by_default = false
     @@default_commit_button_accesskey = nil
+    @@renderer = ClassicFormtasticRenderer
 
     cattr_accessor :default_text_field_size, :default_text_area_height, :all_fields_required_by_default, :include_blank_for_select_by_default,
-                   :required_string, :optional_string, :inline_errors, :label_str_method, :collection_label_methods,
-                   :inline_order, :file_methods, :priority_countries, :priority_currencies, :i18n_lookups_by_default, :default_commit_button_accesskey
+                   :required_string, :optional_string, :inline_errors, :label_str_method, :collection_label_methods, 
+                   :inline_order, :file_methods, :priority_countries, :priority_currencies, :i18n_lookups_by_default, :default_commit_button_accesskey,
+                   :renderer
 
     RESERVED_COLUMNS = [:created_at, :updated_at, :created_on, :updated_on, :lock_version, :version]
 
     INLINE_ERROR_TYPES = [:sentence, :list, :first]
 
     attr_accessor :template
+    
+    def initialize( *args )
+      super
+      extend self.class.renderer
+    end
 
     # Returns a suitable form input for the given +method+, using the database column information
     # and other factors (like the method name) to figure out what you probably want.
@@ -81,12 +85,12 @@ module Formtastic #:nodoc:
     #   <% end %>
     #
     def input(method, options = {})
+      options[:required] = method_required?(method) unless options.key?(:required)
+      options[:as]     ||= default_input_type(method, options)
       content = {
         :method       => method,
         :options      => options.dup
       }
-      options[:required] = method_required?(method) unless options.key?(:required)
-      options[:as]     ||= default_input_type(method, options)
 
       html_class = [ options[:as], (options[:required] ? :required : :optional) ]
       html_class << 'error' if @object && @object.respond_to?(:errors) && !@object.errors[method.to_sym].blank?
@@ -107,9 +111,18 @@ module Formtastic #:nodoc:
       content[:wrapper]       = wrapper_html
       
       content[:label], 
-      content[:input],
+      input,
       content[:hidden]         = inline_input_for(method, options)
       
+      case content[:as]
+      when :radio, :check_boxes
+        content[:items] = input
+      when :date, :datetime, :time
+        content[:chronos] = input
+      else
+        content[:input] = input
+      end      
+            
       render_input(content)
     end
 
@@ -1145,7 +1158,6 @@ module Formtastic #:nodoc:
           html_options[:id] = input_id
           input_tag = check_box(input_name, html_options, value, unchecked_value)
           li_options = value_as_class ? { :class => [method.to_s.singularize, value.to_s.downcase].join('_') } : {}
-          #render_checkbox( input_tag, label, input_id, li_options )
           {
             :input    => input_tag,
             :label    => label,
@@ -1301,7 +1313,6 @@ module Formtastic #:nodoc:
 
         legend  = html_options.delete(:name).to_s
         legend %= parent_child_index(html_options[:parent]) if html_options[:parent]
-        legend  = template.content_tag(:legend, template.content_tag(:span, legend)) unless legend.blank?
 
         if block_given?
           contents = if template.respond_to?(:is_haml?) && template.is_haml?

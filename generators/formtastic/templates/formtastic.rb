@@ -52,3 +52,7 @@
 # You can add custom inputs or override parts of Formtastic by subclassing SemanticFormBuilder and
 # specifying that class here.  Defaults to SemanticFormBuilder.
 # Formtastic::SemanticFormHelper.builder = MyCustomBuilder
+
+# You can replace the default plugin renderer by specifying the module here. Defaults to ClassicFormtasticRenderer
+# Other possibilities include InspectorRenderer (for debugging) and ErbRenderer, or your own
+# Formtastic::SemanticFormBuilder.renderer = Formtastic::ClassicFormtasticRenderer

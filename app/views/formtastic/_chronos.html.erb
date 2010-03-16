@@ -1,0 +1,17 @@
+<li id="<%= wrapper[:id] %>" class="<%= wrapper[:class] %>" >
+  <fieldset>
+    <legend class="label">
+      <%= label -%>
+    </legend>
+    <ol>
+      <% chronos.each do |item| %>
+      <li <%= "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+        <%= item[:label] -%>
+        <%= item[:input] -%>
+      </li>
+      <% end -%>
+    </ol>
+  </fieldset>
+  <%= hints rescue nil -%>
+  <%= inline_errors rescue nil -%>
+</li>
