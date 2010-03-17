@@ -1309,8 +1309,8 @@ module Formtastic #:nodoc:
       #
       def field_set_and_list_wrapping(*args, &block) #:nodoc:
         contents = args.last.is_a?(::Hash) ? '' : args.pop.flatten
-        html_options = args.extract_options!
-
+        options = args.extract_options!
+        html_options = options.dup
         legend  = html_options.delete(:name).to_s
         legend %= parent_child_index(html_options[:parent]) if html_options[:parent]
 
@@ -1323,9 +1323,10 @@ module Formtastic #:nodoc:
         end
         
         fieldset = render_field_set({ 
+          :options    => options,
           :legend     => legend, 
           :contents   => contents, 
-          :wrapper    => html_options.except(:builder, :parent)
+          :wrapper    => html_options.except(:builder, :parent, :partial) #is there a better way to remove render-specific options?
         })
         
         template.concat(fieldset) if block_given?

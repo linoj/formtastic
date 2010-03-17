@@ -1,4 +1,4 @@
-<fieldset <%= wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
+<fieldset <%= raw wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
   <% unless legend.blank? -%>
   <legend>
     <span><%= legend %></span>

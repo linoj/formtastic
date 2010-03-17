@@ -12,16 +12,18 @@ module Formtastic
     def render_input(input)
       #debugger
       begin
-        template.render( input[:as].to_s, input )
+        partial = input[:options][:partial] if input[:options] 
+        partial ||= input[:as].to_s
+        template.render( partial, input )
       rescue ActionView::MissingTemplate
         begin
-          template.render( "formtastic/#{input[:as]}", input )
+          template.render( "formtastic/#{partial}", input )
         rescue ActionView::MissingTemplate
           partial = input[:chronos].present? ? 'chronos' : (input[:items].present? ? 'items' : 'input')
           begin
             template.render( partial, input )
           rescue ActionView::MissingTemplate
-            template.render( "formtastic/"+partial, input )
+            template.render( "formtastic/#{partial}", input )
           end
         end
       end
@@ -29,9 +31,11 @@ module Formtastic
     
     def render_field_set(fieldset)
       begin
-        template.render( 'fieldset', fieldset )
+        partial = fieldset[:options][:partial] if fieldset[:options] 
+        partial ||= 'fieldset'
+        template.render( partial, fieldset )
       rescue ActionView::MissingTemplate
-        template.render( 'formtastic/fieldset', fieldset )
+        template.render( "formtastic/#{partial}", fieldset )
       end
     end
     
