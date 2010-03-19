@@ -34,9 +34,12 @@ module Formtastic #:nodoc:
 
     attr_accessor :template
     
-    def initialize( *args )
+    def initialize(object_name, object, template, options, proc)
+      debugger
       super
-      extend self.class.renderer
+      renderer_name = options[:renderer]
+      renderer_module = renderer_name ? "Formtastic::#{renderer_name.to_s.classify}Renderer".constantize : self.class.renderer
+      extend renderer_module
     end
 
     # Returns a suitable form input for the given +method+, using the database column information
@@ -105,9 +108,9 @@ module Formtastic #:nodoc:
       end
 
       content[:as]            = options[:as]
-      content[:hint]          = localized_string(method, options[:hint], :hint) if options[:hint].present?
-      content[:errors]        = @object.errors[method.to_sym] if @object && @object.respond_to?(:errors)
-      content[:inline_errors] = inline_errors_for(method, options) unless options[:as] == :hidden
+      content[:hint]          = options[:hint].present? && localized_string(method, options[:hint], :hint)
+      content[:errors]        = @object && @object.respond_to?(:errors) && @object.errors[method.to_sym]
+      content[:inline_errors] = (options[:as] != :hidden) && inline_errors_for(method, options) 
       content[:wrapper]       = wrapper_html
       
       content[:label], 
@@ -334,6 +337,11 @@ module Formtastic #:nodoc:
     #
     def commit_button(*args)
       options = args.extract_options!
+      contents = {
+        :method       => :submit,
+        :as           => :button,
+        :options      => options.dup
+      }
       text = options.delete(:label) || args.shift
 
       if @object && @object.respond_to?(:new_record?)
@@ -360,11 +368,10 @@ module Formtastic #:nodoc:
       element_class = ['commit', options.delete(:class)].compact.join(' ') # TODO: Add class reflecting on form action.
       accesskey = (options.delete(:accesskey) || @@default_commit_button_accesskey) unless button_html.has_key?(:accesskey)
       button_html = button_html.merge(:accesskey => accesskey) if accesskey
-      render_input({
-        :as           => :button,
+      render_input(contents.merge({
         :input        => self.submit(text, button_html),
         :wrapper      => {:class => element_class}
-      })
+      }))
     end
 
     # A thin wrapper around #fields_for to set :builder => Formtastic::SemanticFormBuilder

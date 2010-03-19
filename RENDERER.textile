@@ -4,6 +4,8 @@ Replaceable render engines for Formtastic.
 
 One of the things I love about Formtastic is the semantic DSL for specifying a form in my code. One of the things that can frustrate me is the resulting DOM that is generated. While you can often use CSS to work through the DOM structure and get the form to look how you want, it's not always the way I would have done it, and there are cases that just aren't possible. So I decided to refactor Formtastic. At first I looked at just subclassing the builder but decided to fork the project. I made some decisions where to draw the line between DSL and "render", and split the rendering into a separate module.
 
+More in blog post http://www.vaporbase.com/postings/Replaceable_render_engines_for_Formtastic
+
 h2. Renderer API
 
 <pre>
@@ -61,6 +63,11 @@ Other possibilities include InspectorRenderer (for debugging) and ErbRenderer, o
   Formtastic::SemanticFormBuilder.renderer = Formtastic::ClassicFormtasticRenderer
 </pre>
 
+h3. New semantic_form_for options
+
+You can also specify the renderer on a case by case basis using a new semantic_form_for :renderer option. The value is a symbol representing the module. For example :renderer => :erb would load the Formtastic::ErbRenderer module, while :renderer => :classic_formtastic would load Formtastic::ClassicFormtasticRenderer
+  
+
 h2. Renderers
 
 h3. ClassicFormtasticRenderer
@@ -103,8 +110,9 @@ Dumps the arguments to the renderer api (in yaml format). Useful for debugging.
 h2. To Do
 
 * write rspecs for renderers
-* add partial layouts
-* option to specify inline template string in the DSL
+* erb: add partial layouts
+* erb: option to specify inline template string in the DSL
 * option to pass through arbitrary options to the renderer
 * add mustache renderer
+* option to switch renderer for specific form, inputs, or input
 

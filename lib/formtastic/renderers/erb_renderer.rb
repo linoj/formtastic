@@ -10,10 +10,20 @@ module Formtastic
     #   or '_items' or '_chronos'
     
     def render_input(input)
-      #debugger
+      debugger
+      defaults = { # to avoid undefined local variables in templates
+        :method       => nil,
+        :as           => nil,
+        :options      => {},
+        :label        => nil,
+        :hint         => nil,
+        :errors       => nil,
+        :inline_errors => nil,
+        :hidden       => nil
+      }      
       begin
-        partial = input[:options][:partial] if input[:options] 
-        partial ||= input[:as].to_s
+        input.reverse_merge!(defaults)
+        partial = input[:options][:partial] || input[:as].to_s
         template.render( partial, input )
       rescue ActionView::MissingTemplate
         begin
@@ -30,9 +40,14 @@ module Formtastic
     end
     
     def render_field_set(fieldset)
+      defaults = { # to avoid undefined local variables in templates
+        :options      => {},
+        :legend       => nil,
+        :contents     => nil,
+      }
       begin
-        partial = fieldset[:options][:partial] if fieldset[:options] 
-        partial ||= 'fieldset'
+        fieldset.reverse_merge!(defaults)
+        partial = fieldset[:options][:partial] || 'fieldset'
         template.render( partial, fieldset )
       rescue ActionView::MissingTemplate
         template.render( "formtastic/#{partial}", fieldset )

@@ -1,6 +1,8 @@
 <li id="<%= wrapper[:id] %>" class="<%= wrapper[:class] %>" >
-  <%= label rescue nil -%>
-  <%= input rescue nil -%>
-  <%= hints rescue nil -%>
-  <%= inline_errors rescue nil -%>
+  <%= label -%>
+  <%= input -%>
+  <% if hint.present? -%>
+    <p class="inline-hints"><%= hint %></p>
+  <% end -%>
+  <%= inline_errors -%>
 </li>
