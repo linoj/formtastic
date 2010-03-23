@@ -43,11 +43,11 @@ h2. Renderer API
       
 Strings passed to the render API will have already been localized (I18n).
 
-_input_ will include only one of the keys :input, :items, or :chronos.
+@input@ will include only one of the keys @:input@, @:items@, or @:chronos@.
 
 I decided to leave the inline error tags that Formtastic generates, which are based on the #inline_errors configuration option, since they make sense to me. If you really want to customize the error messages, the actual object errors are provided in :errors.
 
-I am also leaving how Formtastic renders _required_ labels (with attr tag). If your custom renderer need to know a field is required, look for options[:required] value.
+I am also leaving how Formtastic renders _required_ labels (with attr tag). If your custom renderer need to know a field is required, look for @options[:required]@ value.
 
 <pre>
     render_field_set( fieldset )
@@ -61,8 +61,8 @@ I am also leaving how Formtastic renders _required_ labels (with attr tag). If y
 
 h2. Configuration
 
-You can replace the default plugin renderer by specifying the module here. Defaults to ClassicFormtasticRenderer.
-Other possibilities include InspectorRenderer (for debugging) and ErbRenderer, or your own.
+You can replace the default plugin renderer by specifying the module here. Defaults to @ClassicFormtasticRenderer@.
+Other possibilities include @InspectorRenderer@ (for debugging) and @ErbRenderer@, or your own.
 <pre>
   Formtastic::SemanticFormBuilder.renderer = Formtastic::ClassicFormtasticRenderer
 </pre>
@@ -71,24 +71,17 @@ h2. New options
 
 h3. semantic_form_for :renderer => RENDERER
 
-You can also specify the renderer on a case by case basis using the semantic_form_for :renderer option, overriding the configuration setting. The value is a symbol representing the module. For example 
-<pre>
-  :renderer => :erb 
-</pre>
-would load the Formtastic::ErbRenderer module, while 
-<pre>
-  :renderer => :classic_formtastic 
-</pre>
-would load Formtastic::ClassicFormtasticRenderer
+You can also specify the renderer on a case by case basis using the @semantic_form_for :renderer@ option, overriding the configuration setting. The value is a symbol representing the module. For example, @:renderer => :erb@ would load the @Formtastic::ErbRenderer@ module, while @:renderer => :classic_formtastic@ would load @Formtastic::ClassicFormtasticRenderer@
 
 h3. form.inputs :structure => DOM_STRUCTURE
 
 Name of a DOM structure format, used by the renderer. I'm thinking we could have as set of standard built-in structures that would be supported by any renderer. (Presently only implemented by the ERB renderer. See below.)
 <pre>
-  :inline       inputs group is wrapped in a <div> and the items are in <p> tags
+  :inline       inputs group is wrapped in a div tag, and the items are in p tags
 </pre>
 
 This is a quick easy way to choose an alternative DOM structure that's generated for a set of fields. For example, 
+
 <pre>
   <% form.inputs 'Full name', :structure => :inline do %>
     <%= form.input :first_name,  :label => 'First',  :input_html => {:size => '15'} %>
@@ -98,6 +91,7 @@ This is a quick easy way to choose an alternative DOM structure that's generated
 </pre>
 
 would generate
+
 <pre>
   <li class="inputs" name="Full Name">
     <label>Full Name</label>
@@ -152,12 +146,15 @@ form.inputs take the following new options:
 </pre>
 
 The ERB renderer uses the :structure option as a prefix on partial names. Thus, doing
+
 <pre>
   <% form.fields :structure => :foo do %>
     <%= form.input :name %>
     ...
 </pre>
+
 is equivalent to  
+
 <pre>
   <% form.fields :partial => 'foo_fields' do %>
     <%= form.input :name, :partial => 'foo_input' %>
