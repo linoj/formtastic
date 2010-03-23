@@ -17,10 +17,11 @@ h2. Renderer API
       :as             => the input type (eg :string, :text, etc)
       :options        => original options
       :label          => string with html label tag
-      :hint           => hints string (pre-rendered)
+      :hint           => hints string
       :errors         => actual errors on the method
       :inline_errors  => string with inline error messages (pre-rendered per @@inline_errors setting)
       :wrapper        => hash of html attributes for the wrapper container (eg :class)
+      :structure      => name of DOM structure (e.g. :inline) (or nil)
       :hidden         => string of additional hidden input tags
 
       WILL CONTAIN ONLY ONE OF THE FOLLOWING:
@@ -40,7 +41,9 @@ h2. Renderer API
                           :label     => string with html label tag
 </pre>
       
-_input_ will include only one of :input, :items, or :chronos.
+Strings passed to the render API will have already been localized (I18n).
+
+_input_ will include only one of the keys :input, :items, or :chronos.
 
 I decided to leave the inline error tags that Formtastic generates, which are based on the #inline_errors configuration option, since they make sense to me. If you really want to customize the error messages, the actual object errors are provided in :errors.
 
@@ -53,6 +56,7 @@ I am also leaving how Formtastic renders _required_ labels (with attr tag). If y
       :legend         => string that should go into the legend
       :contents       => string or array of html tag strings that make the content of the field set
       :wrapper        => hash of html attributes for the fieldset 
+      :structure      => name of DOM structure (e.g. :inline) (or nil)
 </pre>
 
 h2. Configuration
@@ -63,10 +67,56 @@ Other possibilities include InspectorRenderer (for debugging) and ErbRenderer, o
   Formtastic::SemanticFormBuilder.renderer = Formtastic::ClassicFormtasticRenderer
 </pre>
 
-h3. New semantic_form_for options
+h2. New options
 
-You can also specify the renderer on a case by case basis using a new semantic_form_for :renderer option. The value is a symbol representing the module. For example :renderer => :erb would load the Formtastic::ErbRenderer module, while :renderer => :classic_formtastic would load Formtastic::ClassicFormtasticRenderer
-  
+h3. semantic_form_for :renderer => RENDERER
+
+You can also specify the renderer on a case by case basis using the semantic_form_for :renderer option, overriding the configuration setting. The value is a symbol representing the module. For example 
+<pre>
+  :renderer => :erb 
+</pre>
+would load the Formtastic::ErbRenderer module, while 
+<pre>
+  :renderer => :classic_formtastic 
+</pre>
+would load Formtastic::ClassicFormtasticRenderer
+
+h3. form.inputs :structure => DOM_STRUCTURE
+
+Name of a DOM structure format, used by the renderer. I'm thinking we could have as set of standard built-in structures that would be supported by any renderer. (Presently only implemented by the ERB renderer. See below.)
+<pre>
+  :inline       inputs group is wrapped in a <div> and the items are in <p> tags
+</pre>
+
+This is a quick easy way to choose an alternative DOM structure that's generated for a set of fields. For example, 
+<pre>
+  <% form.inputs 'Full name', :structure => :inline do %>
+    <%= form.input :first_name,  :label => 'First',  :input_html => {:size => '15'} %>
+    <%= form.input :middle_name, :label => 'Middle', :input_html => {:size => '5'} %>
+    <%= form.input :last_name,   :label => 'Last',   :input_html => {:size => '15'} %>    
+  <% end %>
+</pre>
+
+would generate
+<pre>
+  <li class="inputs" name="Full Name">
+    <label>Full Name</label>
+    <div>
+      <p class="string required" id="site_page_first_name_input">
+        <label for="site_page_first_name">First<abbr title="required">*</abbr></label><br>
+        <input id="site_page_first_name" name="site_page[first_name]" size="15" type="text"><br>
+      </p>
+      <p class="string required" id="site_page_middle_name_input">
+        <label for="site_page_middle_name">Middle<abbr title="required">*</abbr></label><br>
+        <input id="site_page_middle_name" name="site_page[middle_name]" size="5" type="text"><br>
+      </p>
+      <p class="string required" id="site_page_last_name_input">
+        <label for="site_page_last_name">Last<abbr title="required">*</abbr></label><br>
+        <input id="site_page_last_name" name="site_page[last_name]" size="15" type="text"><br>
+      </p>
+    </div>
+  </li>
+</pre>
 
 h2. Renderers
 
@@ -82,7 +132,7 @@ The ERB renderer renders an ERB partial for each input. There are 4 built-in par
   _input.html.erb             general input
   _items.html.erb             radio and check box items
   _chronos.html.erb           date and time selects
-  _fieldset.html.erb          field set wrapper
+  _fields.html.erb            field set wrapper
 </pre>
   
 You can create a partial for each and any specific input (the :as value), such as "_text.html.erb" for a text area. If not found, it then looks for a partial for the input category ("chronos" for date and time selects; "items" for radio and check boxes' and "input" for all others).
@@ -95,12 +145,25 @@ Using the ERB renderer, form.input takes the following new options:
   :partial     => "partial"    name of partial to use (overrides the defaults)
 </pre>
 
-Similarly, , form.inputs take the following new options:
+form.inputs take the following new options:
 
 <pre>
-  :partial     => "partial"    name of partial to use (overrides the default "fieldset")
+  :partial     => "partial"    name of partial to use (overrides the default "fields")
 </pre>
 
+The ERB renderer uses the :structure option as a prefix on partial names. Thus, doing
+<pre>
+  <% form.fields :structure => :foo do %>
+    <%= form.input :name %>
+    ...
+</pre>
+is equivalent to  
+<pre>
+  <% form.fields :partial => 'foo_fields' do %>
+    <%= form.input :name, :partial => 'foo_input' %>
+    ...
+</pre>
+  
 
 h3. InspectorRenderer
 
@@ -110,9 +173,5 @@ Dumps the arguments to the renderer api (in yaml format). Useful for debugging.
 h2. To Do
 
 * write rspecs for renderers
-* erb: add partial layouts
 * erb: option to specify inline template string in the DSL
-* option to pass through arbitrary options to the renderer
-* add mustache renderer
-* option to switch renderer for specific form, inputs, or input
 

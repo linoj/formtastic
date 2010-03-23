@@ -1,0 +1,8 @@
+<%= label -%>
+<% chronos.each do |item| %>
+<p <%= raw "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+  <%= item[:label] -%>
+  <%= item[:input] -%>
+</p>
+<%= hint -%>
+<%= inline_errors -%>

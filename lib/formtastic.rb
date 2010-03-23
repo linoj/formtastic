@@ -33,9 +33,9 @@ module Formtastic #:nodoc:
     INLINE_ERROR_TYPES = [:sentence, :list, :first]
 
     attr_accessor :template
+    @structure = nil
     
     def initialize(object_name, object, template, options, proc)
-      debugger
       super
       renderer_name = options[:renderer]
       renderer_module = renderer_name ? "Formtastic::#{renderer_name.to_s.classify}Renderer".constantize : self.class.renderer
@@ -112,6 +112,7 @@ module Formtastic #:nodoc:
       content[:errors]        = @object && @object.respond_to?(:errors) && @object.errors[method.to_sym]
       content[:inline_errors] = (options[:as] != :hidden) && inline_errors_for(method, options) 
       content[:wrapper]       = wrapper_html
+      content[:structure]     = @structure # 'inherited' from #inputs
       
       content[:label], 
       input,
@@ -280,8 +281,10 @@ module Formtastic #:nodoc:
       html_options = args.extract_options!
       html_options[:class] ||= "inputs"
       html_options[:name] = title
-
-      if html_options[:for] # Nested form
+      save_structure = @structure #push
+      @structure = html_options.delete(:structure)
+      
+      ret = if html_options[:for] # Nested form
         inputs_for_nested_attributes(*(args << html_options), &block)
       elsif block_given?
         field_set_and_list_wrapping(*(args << html_options), &block)
@@ -298,6 +301,8 @@ module Formtastic #:nodoc:
 
         field_set_and_list_wrapping(*((args << html_options) << contents))
       end
+      @structure = save_structure #pop
+      ret
     end
     alias :input_field_set :inputs
 
@@ -1317,9 +1322,9 @@ module Formtastic #:nodoc:
       def field_set_and_list_wrapping(*args, &block) #:nodoc:
         contents = args.last.is_a?(::Hash) ? '' : args.pop.flatten
         options = args.extract_options!
-        html_options = options.dup
-        legend  = html_options.delete(:name).to_s
-        legend %= parent_child_index(html_options[:parent]) if html_options[:parent]
+        html_options = options.except(:builder, :parent, :structure, :partial) #is there a better way to remove render-specific options?
+        legend  = options[:name].to_s
+        legend %= parent_child_index(options[:parent]) if options[:parent]
 
         if block_given?
           contents = if template.respond_to?(:is_haml?) && template.is_haml?
@@ -1333,7 +1338,8 @@ module Formtastic #:nodoc:
           :options    => options,
           :legend     => legend, 
           :contents   => contents, 
-          :wrapper    => html_options.except(:builder, :parent, :partial) #is there a better way to remove render-specific options?
+          :wrapper    => html_options, 
+          :structure  => @structure
         })
         
         template.concat(fieldset) if block_given?
@@ -1354,19 +1360,20 @@ module Formtastic #:nodoc:
         title
       end
 
-      # Also generates a fieldset and an ordered list but with label based in
-      # method. This methods is currently used by radio and datetime inputs.
-      #
-      def field_set_and_list_wrapping_for_method(method, options, contents) #:nodoc:
-        contents = contents.join if contents.respond_to?(:join)
-
-        template.content_tag(:fieldset,
-            template.content_tag(:legend,
-                self.label(method, options_for_label(options).merge(:for => options.delete(:label_for))), :class => 'label'
-              ) <<
-            template.content_tag(:ol, contents)
-          )
-      end
+#!!!??? is this handled
+      # # Also generates a fieldset and an ordered list but with label based in
+      # # method. This methods is currently used by radio and datetime inputs.
+      # #
+      # def field_set_and_list_wrapping_for_method(method, options, contents) #:nodoc:
+      #   contents = contents.join if contents.respond_to?(:join)
+      # 
+      #   template.content_tag(:fieldset,
+      #       template.content_tag(:legend,
+      #           self.label(method, options_for_label(options).merge(:for => options.delete(:label_for))), :class => 'label'
+      #         ) <<
+      #       template.content_tag(:ol, contents)
+      #     )
+      # end
 
       # For methods that have a database column, take a best guess as to what the input method
       # should be.  In most cases, it will just return the column type (eg :string), but for special

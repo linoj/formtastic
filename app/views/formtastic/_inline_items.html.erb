@@ -1,0 +1,11 @@
+<%= label -%>
+<% items.each do |item| -%>
+  <p <%= raw "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+    <label for="<%= item[:input_id] %>">
+      <%= item[:input] -%>
+      <%= item[:label] -%>
+    </label>
+  </p>
+<% end -%>
+<%= hint -%>
+<%= inline_errors -%>

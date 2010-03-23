@@ -1,4 +1,4 @@
-<li id="<%= wrapper[:id] %>" class="<%= wrapper[:class] %>" >
+<li <%= raw wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
   <%= label -%>
   <%= input -%>
   <% if hint.present? -%>
