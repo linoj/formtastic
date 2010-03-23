@@ -83,7 +83,7 @@ Name of a DOM structure format, used by the renderer. I'm thinking we could have
 This is a quick easy way to choose an alternative DOM structure that's generated for a set of fields. For example, 
 
 <pre>
-  <% form.inputs 'Full name', :structure => :inline do %>
+  <% form.inputs 'Full Name', :structure => :inline do %>
     <%= form.input :first_name,  :label => 'First',  :input_html => {:size => '15'} %>
     <%= form.input :middle_name, :label => 'Middle', :input_html => {:size => '5'} %>
     <%= form.input :last_name,   :label => 'Last',   :input_html => {:size => '15'} %>    
@@ -96,17 +96,17 @@ would generate
   <li class="inputs" name="Full Name">
     <label>Full Name</label>
     <div>
-      <p class="string required" id="site_page_first_name_input">
-        <label for="site_page_first_name">First<abbr title="required">*</abbr></label><br>
-        <input id="site_page_first_name" name="site_page[first_name]" size="15" type="text"><br>
+      <p class="string required" id="user_first_name_input">
+        <label for="user_first_name">First<abbr title="required">*</abbr></label><br>
+        <input id="user_first_name" name="user[first_name]" size="15" type="text"><br>
       </p>
-      <p class="string required" id="site_page_middle_name_input">
-        <label for="site_page_middle_name">Middle<abbr title="required">*</abbr></label><br>
-        <input id="site_page_middle_name" name="site_page[middle_name]" size="5" type="text"><br>
+      <p class="string required" id="user_middle_name_input">
+        <label for="user_middle_name">Middle<abbr title="required">*</abbr></label><br>
+        <input id="user_middle_name" name="user[middle_name]" size="5" type="text"><br>
       </p>
-      <p class="string required" id="site_page_last_name_input">
-        <label for="site_page_last_name">Last<abbr title="required">*</abbr></label><br>
-        <input id="site_page_last_name" name="site_page[last_name]" size="15" type="text"><br>
+      <p class="string required" id="user_last_name_input">
+        <label for="user_last_name">Last<abbr title="required">*</abbr></label><br>
+        <input id="user_last_name" name="user[last_name]" size="15" type="text"><br>
       </p>
     </div>
   </li>
