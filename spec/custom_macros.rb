@@ -6,6 +6,38 @@ module CustomMacros
   
   module ClassMethods
     
+    def it_should_call_render_input( obj_name, method, options )
+      it "should call render_input" do
+        obj = eval("@#{obj_name}")
+        semantic_form_for(obj) do |builder|
+          builder.stub!(:country_select).and_return("<select><option>...</option></select>") if options[:as] == :country # sorry if kludgey
+          builder.stub!(:currency_select).and_return("<select><option>...</option></select>") if options[:as] == :currency
+          builder.should_receive(:render_input).with(hash_including(:method => method, :as => options[:as], :input => anything)).and_return('tags')
+          concat(builder.input(method, options))
+        end
+      end
+    end
+    
+    def it_should_call_render_input_with_items( obj_name, method, options )
+      it "should call render_input with items" do
+        obj = eval("@#{obj_name}")
+        semantic_form_for(obj) do |builder|
+          builder.should_receive(:render_input).with(hash_including(:method => method, :as => options[:as], :items => anything)).and_return('tags')
+          concat(builder.input(method, options))
+        end
+      end
+    end
+    
+    def it_should_call_render_input_with_chronos( obj_name, method, options )
+      it "should call render_input with chronos" do
+        obj = eval("@#{obj_name}")
+        semantic_form_for(obj) do |builder|
+          builder.should_receive(:render_input).with(hash_including(:method => method, :as => options[:as], :chronos => anything)).and_return('tags')
+          concat(builder.input(method, options))
+        end
+      end
+    end
+
     def it_should_have_input_wrapper_with_class(class_name)
       it "should have input wrapper with class '#{class_name}'" do
         output_buffer.should have_tag("form li.#{class_name}") 

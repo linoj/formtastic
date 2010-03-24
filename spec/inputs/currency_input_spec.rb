@@ -31,6 +31,7 @@ describe 'currency input' do
       end
     end
 
+    it_should_call_render_input( :new_post, :currency, :as => :currency )
     it_should_have_input_wrapper_with_class("currency")
     it_should_have_input_wrapper_with_id("post_currency_input")
 

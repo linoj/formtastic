@@ -17,6 +17,7 @@ describe 'radio input' do
       end
     end
     
+    it_should_call_render_input_with_items( :new_post, :author, :as => :radio )
     it_should_have_input_wrapper_with_class("radio")
     it_should_have_input_wrapper_with_id("post_author_input")
     it_should_have_a_nested_fieldset

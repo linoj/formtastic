@@ -15,6 +15,7 @@ describe 'check_boxes input' do
       end
     end
     
+    it_should_call_render_input_with_items( :fred, :posts, :as => :check_boxes )
     it_should_have_input_wrapper_with_class("check_boxes")
     it_should_have_input_wrapper_with_id("author_posts_input")
     it_should_have_a_nested_fieldset

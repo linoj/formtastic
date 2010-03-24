@@ -21,6 +21,8 @@ describe 'select input' do
         end
       end
 
+      it_should_call_render_input( :new_post, :title, :as => :select, :collection => @array_with_values)
+
       it 'should have a option for each key and/or value' do
         @array_with_values.each do |v|
           output_buffer.should have_tag("form li select option[@value='#{v}']", /^#{v}$/)
@@ -97,6 +99,7 @@ describe 'select input' do
       end
     end
 
+    it_should_call_render_input( :new_post, :author, :as => :select)
     it_should_have_input_wrapper_with_class("select")
     it_should_have_input_wrapper_with_id("post_author_input")
     it_should_have_label_with_text(/Author/)

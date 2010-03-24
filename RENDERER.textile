@@ -31,7 +31,7 @@ h2. Renderer API
       :items          => array of input items to be rendered, each hash with keys
       
                           :input     => string with html input tag (eg radio)
-                          :label     => string with html label tag
+                          :label     => string with label text (eg "Choice A")
                           :input_id  => string with target dom id of the input
                           :wrapper   => hash of html attributes for the wrapper container (eg :class)
 

@@ -16,6 +16,7 @@ describe 'hidden input' do
     end
   end
 
+  it_should_call_render_input( :new_post, :secret, :as => :hidden )
   it_should_have_input_wrapper_with_class("hidden")
   it_should_have_input_wrapper_with_id("post_secret_input")
   it_should_not_have_a_label

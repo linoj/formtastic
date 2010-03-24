@@ -10,7 +10,7 @@ module Formtastic
     #   or '_items' or '_chronos'
     
     def render_input(input)
-      debugger
+      #debugger
       defaults = { # to avoid undefined local variables in templates
         :method       => nil,
         :as           => nil,
@@ -44,7 +44,7 @@ module Formtastic
     end
     
     def render_field_set(fieldset)
-      debugger
+      #debugger
       defaults = { # to avoid undefined local variables in templates
         :options      => {},
         :legend       => nil,

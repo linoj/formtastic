@@ -14,6 +14,7 @@ describe 'file input' do
     end
   end
 
+  it_should_call_render_input( :new_post, :body, :as => :file )
   it_should_have_input_wrapper_with_class("file")
   it_should_have_input_wrapper_with_id("post_body_input")
   it_should_have_label_with_text(/Body/)

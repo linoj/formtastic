@@ -14,6 +14,7 @@ describe 'time input' do
     end
   end
    
+  it_should_call_render_input_with_chronos( :new_post, :publish_at, :as => :time )
   it_should_have_input_wrapper_with_class("time")
   it_should_have_input_wrapper_with_id("post_publish_at_input")
   it_should_have_a_nested_fieldset

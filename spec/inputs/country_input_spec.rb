@@ -31,6 +31,7 @@ describe 'country input' do
       end
     end
     
+    it_should_call_render_input( :new_post, :country, :as => :country )
     it_should_have_input_wrapper_with_class("country")
     it_should_have_input_wrapper_with_id("post_country_input")
     

@@ -36,6 +36,7 @@ module Formtastic #:nodoc:
     @structure = nil
     
     def initialize(object_name, object, template, options, proc)
+      #debugger
       super
       renderer_name = options[:renderer]
       renderer_module = renderer_name ? "Formtastic::#{renderer_name.to_s.classify}Renderer".constantize : self.class.renderer
