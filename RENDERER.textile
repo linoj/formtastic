@@ -169,6 +169,5 @@ Dumps the arguments to the renderer api (in yaml format). Useful for debugging.
 
 h2. To Do
 
-* write rspecs for renderers
 * erb: option to specify inline template string in the DSL
 

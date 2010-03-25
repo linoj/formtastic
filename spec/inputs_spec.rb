@@ -22,6 +22,18 @@ describe 'SemanticFormBuilder#inputs' do
         end
       end
 
+      it "should call render_field_set" do
+        @expected = {
+          :contents   => 'hello'
+        }
+        semantic_form_for(@new_post) do |builder|
+          builder.should_receive(:render_field_set).with(hash_including(@expected)).and_return('tags')
+          @inputs_output = builder.inputs do
+            concat('hello')
+          end
+        end
+      end
+
       it 'should output just the content wrapped in inputs, not the whole template' do
         output_buffer.should      =~ /before_builder/
         @inputs_output.should_not =~ /before_builder/
