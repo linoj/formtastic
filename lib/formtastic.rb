@@ -109,9 +109,9 @@ module Formtastic #:nodoc:
       end
 
       content[:as]            = options[:as]
-      content[:hint]          = options[:hint].present? && localized_string(method, options[:hint], :hint)
-      content[:errors]        = @object && @object.respond_to?(:errors) && @object.errors[method.to_sym]
-      content[:inline_errors] = (options[:as] != :hidden) && inline_errors_for(method, options) 
+      content[:hint]          = localized_string(method, options[:hint], :hint) if options[:hint].present?
+      content[:errors]        = @object.errors[method.to_sym] if @object && @object.respond_to?(:errors)
+      content[:inline_errors] = inline_errors_for(method, options) unless (options[:as] == :hidden) 
       content[:wrapper]       = wrapper_html
       content[:structure]     = @structure # 'inherited' from #inputs
       
