@@ -1,8 +1,6 @@
-<p <%= raw wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
-  <%= label %><br />
+<p <%= html_attr wrapper %>>
+  <%= "#{label}<br />" if label.present? -%>
   <%= input %><br />
-  <% if hint.present? -%>
-    <span class="inline-hints"><%= hint %></span><br />
-  <% end -%>
+  <%= "<span class=\"inline-hints\">#{hint}</span><br />" if hint.present? -%>
   <%= inline_errors -%>
 </p>

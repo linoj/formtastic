@@ -63,3 +63,4 @@ module Formtastic
     
   end
 end
+

@@ -5,7 +5,7 @@
     </legend>
     <ol>
       <% chronos.each do |item| %>
-      <li <%= raw "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+      <li <%= html_attr wrapper %>>
         <%= item[:label] -%>
         <%= item[:input] -%>
       </li>

@@ -1,4 +1,4 @@
-<li <%= raw wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
-  <label><%= legend %></label>
+<li <%= html_attr wrapper %>>
+  <%= "<label>#{legend}</label>" if legend.present? -%>
   <div><%= contents %></div>
 </li>

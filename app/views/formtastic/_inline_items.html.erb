@@ -1,6 +1,6 @@
 <%= label -%>
 <% items.each do |item| -%>
-  <p <%= raw "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+  <p <%= html_attr wrapper %>>
     <label for="<%= item[:input_id] %>">
       <%= item[:input] -%>
       <%= item[:label] -%>

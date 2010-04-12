@@ -283,7 +283,9 @@ module Formtastic #:nodoc:
       html_options[:class] ||= "inputs"
       html_options[:name] = title
       save_structure = @structure #push
-      @structure = html_options.delete(:structure)
+      if html_options[:structure]
+        @structure = html_options.delete(:structure)
+      end
       
       ret = if html_options[:for] # Nested form
         inputs_for_nested_attributes(*(args << html_options), &block)
@@ -346,7 +348,8 @@ module Formtastic #:nodoc:
       contents = {
         :method       => :submit,
         :as           => :button,
-        :options      => options.dup
+        :options      => options.dup,
+        :structure    => @structure
       }
       text = options.delete(:label) || args.shift
 
@@ -439,6 +442,7 @@ module Formtastic #:nodoc:
 
       # special case for boolean (checkbox) labels, which have a nested input
       text = (options.delete(:label_prefix_for_nested_input) || "") + text
+      text = text.html_safe if text.respond_to? :html_safe
 
       input_name = options.delete(:input_name) || method
       super(input_name, text, options)

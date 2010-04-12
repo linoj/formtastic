@@ -1,9 +1,5 @@
-<fieldset <%= raw wrapper.map {|atr,value| "#{atr}=\"#{value}\""}.join(' ') %>>
-  <% unless legend.blank? -%>
-  <legend>
-    <span><%= legend %></span>
-  </legend>
-  <% end -%>
+<fieldset <%= html_attr wrapper %>>
+  <%= "<legend><span>#{legend}</span></legend>" if legend.present? -%>
   <ol>
     <% Array(contents).each do |item| -%>
       <%= item -%>

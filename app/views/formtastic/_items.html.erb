@@ -5,7 +5,7 @@
     </legend>
     <ol>
       <% items.each do |item| -%>
-      <li <%= raw "class=\"#{item[:wrapper][:class]}\"" if item[:wrapper][:class].present? %>>
+      <li <%= html_attr wrapper %>>
         <label for="<%= item[:input_id] %>">
           <%= item[:input] -%>
           <%= item[:label] -%>

@@ -38,4 +38,24 @@ describe ':structure option for #inputs' do
     end        
   end
   
+  it "is used for buttons" do
+    semantic_form_for(@new_post) do |builder|
+      builder.should_receive(:render_field_set).with(hash_including(:structure => :foo)).twice.and_return('tags')
+      builder.inputs :structure => :foo do
+        builder.buttons
+      end
+    end            
+  end
+  
+  it "is used for commit_button" do
+    semantic_form_for(@new_post) do |builder|
+      builder.should_receive(:render_input).with(hash_including(:structure => :foo)).and_return('tags')
+      builder.inputs :structure => :foo do
+        builder.commit_button
+      end
+    end            
+  end
+  
+  it 'inherits current structure through semantic_fields_for'
+  
 end
