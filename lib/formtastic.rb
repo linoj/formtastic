@@ -282,12 +282,8 @@ module Formtastic #:nodoc:
       html_options = args.extract_options!
       html_options[:class] ||= "inputs"
       html_options[:name] = title
-      save_structure = @structure #push
-      if html_options[:structure]
-        @structure = html_options.delete(:structure)
-      end
       
-      ret = if html_options[:for] # Nested form
+      if html_options[:for] # Nested form
         inputs_for_nested_attributes(*(args << html_options), &block)
       elsif block_given?
         field_set_and_list_wrapping(*(args << html_options), &block)
@@ -304,8 +300,6 @@ module Formtastic #:nodoc:
 
         field_set_and_list_wrapping(*((args << html_options) << contents))
       end
-      @structure = save_structure #pop
-      ret
     end
     alias :input_field_set :inputs
 
@@ -1327,7 +1321,11 @@ module Formtastic #:nodoc:
       def field_set_and_list_wrapping(*args, &block) #:nodoc:
         contents = args.last.is_a?(::Hash) ? '' : args.pop.flatten
         options = args.extract_options!
-        html_options = options.except(:builder, :parent, :structure, :partial) #is there a better way to remove render-specific options?
+        save_structure = @structure #push
+        if options[:structure]
+          @structure = options.delete(:structure)
+        end
+        html_options = options.except(:builder, :parent, :partial) #is there a better way to remove render-specific options?
         legend  = options[:name].to_s
         legend %= parent_child_index(options[:parent]) if options[:parent]
 
@@ -1346,6 +1344,8 @@ module Formtastic #:nodoc:
           :wrapper    => html_options, 
           :structure  => @structure
         })
+        
+        @structure = save_structure #pop
         
         template.concat(fieldset) if block_given?
         fieldset
